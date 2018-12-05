@@ -20,7 +20,7 @@ void processInput(GLFWwindow *window);
 void generateObstacles(int nObstacles, vector<glm::mat4>& obstacles);
 void drawObstacles(vector<glm::mat4>& obstacles, Model rock, Shader ourShader);
 void moveObstacles(vector<glm::mat4>& obstacles, int turn);
-void destroyObstacles(float z, vector<glm::mat4>& obstacles);
+void destroyObstacles(float z, vector<glm::mat4>& obstacles, int& points);
 
 //global variables
 float z ;
@@ -30,6 +30,7 @@ int timeTotal  = 5; //velocidade de deslocamento dos objetos
 int depthMax  = 15; //deslocamento total no eixo z que os objetos poderao estar
 int depthMin =  10;
 int xyMax  = 4;
+int points;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -120,6 +121,8 @@ int main()
 
     int difficulty = 1;
     bool generate = true;
+    bool flag = false;
+    int generateFlag = 1;
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)){
@@ -131,7 +134,7 @@ int main()
 
 
         //turn = (currentFrame*z)/timeTotal;
-        turn += 0.001;
+        turn = 0.05;
         /*
         currentFrame   ----   ?
         timeTotal     -----   depthTotal
@@ -162,27 +165,29 @@ int main()
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 
-        //render the obstacles
-        //for(int i=0; i < difficulty; ++i) {
-        //  ourShader.setMat4("model", obstacles[i]);
-        //  rock.Draw(ourShader);
-        //}
-
-        //for(int i=0; i < difficulty; ++i) {
-        //    float translate =  obstacles[i][3][2] + turn;
-        //    //cout << "translate = " << translate << endl;
-        //    //cout << "z " << z << endl;
-        //    //cout << "z " << obstacles[i][3][2] << endl;
-        //    //glm::translate(obstacles[i], glm::vec3(obstacles[i][3][0], obstacles[i][3][1], translate));
-        //    obstacles[i][3][2] = translate;
-        //}
-        //ourShader.setMat4("model", rockmodel);
-        //rock.Draw(ourShader);
+        //game preparation
         if(generate){ generateObstacles(difficulty, obstacles); generate=false; }
         drawObstacles(obstacles, rock, ourShader);
 
-        //cout << "z desloc " << z << endl;
-        //rockmodel = glm::translate(rockmodel, glm::vec3(x, y, z+turn));
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) { flag = !flag; }
+
+        if (flag) {
+            //the game begins
+            //translate de obstacles (move our starship)
+            for(int i=0; i < (int)obstacles.size(); ++i) {
+                float translate =  obstacles[i][3][2] + turn;
+                obstacles[i][3][2] = translate;
+           }
+           int curPoints = points;
+           //check when obstacles get out the plan
+           destroyObstacles(model[3][2], obstacles, points);
+           //increase the difficulty and generate more obstacles
+           if(points > curPoints) { ++generateFlag; generate = true;} //check if the obstacles are destroyed
+           if(generateFlag%7 == 0) { ++difficulty; ++generateFlag; }
+           if(obstacles.size() == 7) { difficulty = 1; }
+           //see the colisions
+        }
+        //cout << "number of obstacles: " << obstacles.size() << endl;
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -253,9 +258,15 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void generateObstacles(int nObstacles,vector<glm::mat4>& obstacles){
   for(int i=0;i<nObstacles;++i) {
         glm::mat4 matrixGenerator;
+        int signalX = rand() % 2;
+        int signalY = rand() % 2;
+        //cout << "signalX: " << signalX << endl;
         z = (((5 + (rand() % ( 15 - 5 + 1 )))) * (-1));
         x = rand() % xyMax;
         y = rand()% xyMax;
+
+        if(signalX==1) { x *= (-1); }
+        if(signalY==1) { y *= (-1); }
 
         matrixGenerator = glm::translate(matrixGenerator, glm::vec3(x, y, z));
         matrixGenerator = glm::scale(matrixGenerator, glm::vec3(0.5f, 0.5f, 0.5f));
@@ -279,8 +290,8 @@ void moveObstacles(vector<glm::mat4>& obstacles, int turn){
   }
 }
 
-void destroyObstacles(float z, vector<glm::mat4>& obstacles){
+void destroyObstacles(float z, vector<glm::mat4>& obstacles, int& points){
   for(int i=0; i < (int)obstacles.size(); ++i) {
-      if(obstacles[i][3][2] < z) { obstacles.erase(obstacles.begin() + i); }
+      if(obstacles[i][3][2] > z) { obstacles.erase(obstacles.begin() + i); ++points;}
   }
 }
