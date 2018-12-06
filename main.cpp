@@ -21,6 +21,7 @@ void generateObstacles(int nObstacles, vector<glm::mat4>& obstacles);
 void drawObstacles(vector<glm::mat4>& obstacles, Model rock, Shader ourShader);
 void moveObstacles(vector<glm::mat4>& obstacles, int turn);
 void destroyObstacles(float z, vector<glm::mat4>& obstacles, int& points);
+void checkColisions(glm::mat4 model, vector<glm::mat4>& obstacles);
 
 //global variables
 float z ;
@@ -29,8 +30,10 @@ float y ;
 int timeTotal  = 5; //velocidade de deslocamento dos objetos
 int depthMax  = 15; //deslocamento total no eixo z que os objetos poderao estar
 int depthMin =  10;
-int xyMax  = 8;
+int xMax  = 8;
+int yMax  = 4;
 int points;
+bool end_ = false;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -124,6 +127,15 @@ int main()
     bool generate = true;
     bool flag = false;
     int generateFlag = 1;
+    //char move;
+    //int countMove = 1;
+
+
+    glm::mat4 model;
+    model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f)); // translate it down so it's at the center of the scene
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+    model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)){
@@ -160,10 +172,13 @@ int main()
         ourShader.setMat4("view", view);
 
         // render the loaded model
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-        model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
+        //glm::mat4 model;
+        //model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f)); // translate it down so it's at the center of the scene
+        //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+        //model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
+        //if(move=='l') { model = glm::translate(model, glm::vec3(0.0f, turn*countMove, 0.0f)); }
+        //if(move=='r') { model = glm::translate(model, glm::vec3(0.0f, (-turn)*countMove, 0.0f)); }
+
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 
@@ -181,6 +196,9 @@ int main()
                 obstacles[i][3][2] = translate;
            }
            int curPoints = points;
+           //check end game
+           checkColisions(model, obstacles);
+           if(end_) { exit(0); }
            //check when obstacles get out the plan
            destroyObstacles(model[3][2], obstacles, points);
            //increase the difficulty and generate more obstacles
@@ -190,6 +208,23 @@ int main()
            //see the colisions
         }
         //cout << "number of obstacles: " << obstacles.size() << endl;
+
+        //moves
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            model[3][1] += turn;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            model[3][1] -= turn;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            model[3][0] -= turn;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            model[3][0] += turn;
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -264,8 +299,8 @@ void generateObstacles(int nObstacles,vector<glm::mat4>& obstacles){
         int signalY = rand() % 2;
         //cout << "signalX: " << signalX << endl;
         z = (((5 + (rand() % ( 15 - 5 + 1 )))) * (-1));
-        x = rand() % xyMax;
-        y = rand()% xyMax;
+        x = rand() % xMax;
+        y = rand()% yMax;
 
         if(signalX==1) { x *= (-1); }
         if(signalY==1) { y *= (-1); }
@@ -294,6 +329,48 @@ void moveObstacles(vector<glm::mat4>& obstacles, int turn){
 
 void destroyObstacles(float z, vector<glm::mat4>& obstacles, int& points){
   for(int i=0; i < (int)obstacles.size(); ++i) {
-      if(obstacles[i][3][2] > z) { obstacles.erase(obstacles.begin() + i); ++points;}
+      if(obstacles[i][3][2] > z+2) { obstacles.erase(obstacles.begin() + i); ++points;}
+  }
+}
+
+void checkColisions(glm::mat4 model, vector<glm::mat4>& obstacles){ //x+! x-1 y+1 y-1
+   for(int i=0; i < (int)obstacles.size(); ++i) { //check only in z axis
+       //cout << "obstacle " << obstacles[i][3][2] << endl;
+       //cout << "model" <<  model[3][2] << endl;
+       if(obstacles[i][3][2] >= -0.0005f) {
+         cout << "huehue" << endl;
+          /*if(obstacles[i][3][0] <= model[3][0]+1.5f && obstacles[i][3][0] >= model[3][0]) { //dir
+                cout << "hued" << endl;
+                end_ = true;
+                return;
+          }else if(obstacles[i][3][0] >= model[3][0]-1.5f && obstacles[i][3][0] <= model[3][0]) {//esq
+                cout << "huee" << endl;
+                end_ = true;
+                return;
+          }*/if(obstacles[i][3][0] <= model[3][0]+1.5f && obstacles[i][3][0] >= model[3][0] && obstacles[i][3][1] <= model[3][1]+1.5f && obstacles[i][3][1] >= model[3][1]) { //dir
+                end_ = true;
+                return;
+          }else if(obstacles[i][3][0] >= model[3][0]-1.5f && obstacles[i][3][0] <= model[3][0] && obstacles[i][3][1] >= model[3][1]-1.5f && obstacles[i][3][1] <= model[3][1]) {//esq
+                end_ = true;
+                return;
+          }if(obstacles[i][3][0] <= model[3][0]+1.5f && obstacles[i][3][0] >= model[3][0] && obstacles[i][3][1] >= model[3][1]-1.5f && obstacles[i][3][1] <= model[3][1]) { //dir
+                end_ = true;
+                return;
+          }else if(obstacles[i][3][0] >= model[3][0]-1.5f && obstacles[i][3][0] <= model[3][0] && obstacles[i][3][1] <= model[3][1]+1.5f && obstacles[i][3][1] >= model[3][1]) {//esq
+                end_ = true;
+                return;
+          }
+
+
+          //else if(obstacles[i][3][1] <= model[3][1]+1.5f && obstacles[i][3][1] >= model[3][1]) {//cima
+            //    cout << "huec" << endl;
+            //    end_ = true;
+            //    return;
+          //}else if(obstacles[i][3][1] >= model[3][1]-1.5f && obstacles[i][3][1] <= model[3][1]) {//baixo
+            //    cout << "hueb" << endl;
+            //    end_ = true;
+            //    return;
+          //}
+       }
   }
 }
