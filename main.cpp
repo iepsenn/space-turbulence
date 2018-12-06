@@ -29,7 +29,7 @@ float y ;
 int timeTotal  = 5; //velocidade de deslocamento dos objetos
 int depthMax  = 15; //deslocamento total no eixo z que os objetos poderao estar
 int depthMin =  10;
-int xyMax  = 4;
+int xyMax  = 8;
 int points;
 
 // settings
@@ -94,8 +94,9 @@ int main()
 
     // load models
     // -----------
-    Model ourModel(FileSystem::getPath("resources/objects/nanosuit/nanosuit.obj"));
-    //Model ourModel(FileSystem::getPath("resources/objects/z4e9hljoq1hc-tie_fighter/TIE-fighter.obj"));
+    //Model ourModel(FileSystem::getPath("resources/objects/EnterpriseNCC1701D/Enterprise NCC 1701 D/enterprise1701d.obj"));
+    Model ourModel(FileSystem::getPath("resources/objects/Flying Car/HN 48 Flying Car/HN 48 Flying Car.obj"));
+    //Model ourModel(FileSystem::getPath("resources/objects/cyborg/cyborg.obj"));
     Model rock(FileSystem::getPath("resources/objects/rock/rock.obj"));
 
     // draw in wireframe
@@ -133,7 +134,7 @@ int main()
         lastFrame = currentFrame;
 
 
-        //turn = (currentFrame*z)/timeTotal;
+        //turn = (difficulty/timeTotal)/difficulty;
         turn = 0.05;
         /*
         currentFrame   ----   ?
@@ -160,8 +161,9 @@ int main()
 
         // render the loaded model
         glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 
