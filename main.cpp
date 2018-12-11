@@ -13,10 +13,7 @@
 #include <ctime>
 #include <iostream>
 
-#include <irrKlang/irrKlang.h>
-using namespace irrklang;
-
-//ISoundEngine *SoundEngine = createIrrKlangDevice();
+//#include <SFML/Audio.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -57,7 +54,7 @@ float lastFrame = 0.0f;
 int main()
 {
 
-    ISoundEngine *SoundEngine = createIrrKlangDevice();
+    //ISoundEngine *SoundEngine = createIrrKlangDevice();
 
     // glfw: initialize and configure
     // ------------------------------
@@ -72,7 +69,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Space Turbulence", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -136,8 +133,19 @@ int main()
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
     model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
 
-    //PlaySound("resources/objects/topgear.mp3", NULL, SND_ASYNC|SND_FILENAME|SND_LOOP);
-    SoundEngine->play2D("resources/objects/topgear.mp3", GL_TRUE);
+
+    /*sf::Music music;
+    sf::Music endGame;
+
+    if (!music.openFromFile("resources/sounds/topgear.wav"))
+        return -1; // error
+
+    if (!endGame.openFromFile("resources/sounds/end_game.wav"))
+        return -1; // error
+        */
+    //music.play();
+    //music.setLoop(true);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)){
@@ -200,7 +208,7 @@ int main()
            int curPoints = points;
            //check end game
            checkColisions(model, obstacles);
-           if(end_) { break; } //exit(0); }
+           if(end_) { /*music.stop(); endGame.play();*/ break; } //exit(0); }
            //check when obstacles get out the plan
            destroyObstacles(model[3][2], obstacles, points);
            //increase the difficulty and generate more obstacles
@@ -240,7 +248,7 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
 
-    SoundEngine->drop(); // delete engine
+    //SoundEngine->drop(); // delete engine
 
     glfwTerminate();
     return 0;
