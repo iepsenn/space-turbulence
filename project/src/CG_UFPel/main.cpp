@@ -104,7 +104,7 @@ int main()
     // -----------
     //Model ourModel(FileSystem::getPath("resources/objects/EnterpriseNCC1701D/Enterprise NCC 1701 D/enterprise1701d.obj"));
     Model ourModel(FileSystem::getPath("resources/objects/Flying Car/HN 48 Flying Car/HN 48 Flying Car.obj"));
-    //Model ourModel(FileSystem::getPath("resources/objects/cyborg/cyborg.obj"));
+    Model background(FileSystem::getPath("resources/objects/space/space.obj"));
     Model rock(FileSystem::getPath("resources/objects/rock/rock.obj"));
 
     // draw in wireframe
@@ -133,6 +133,10 @@ int main()
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
     model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
 
+    glm::mat4 space;
+    space = glm::translate(space, glm::vec3(0.0f, 0.0f, -16.0f));
+    space = glm::rotate(space, glm::radians(90.0f), glm::vec3(0, 1, 0));
+    space = glm::scale(space, glm::vec3(20.0f, 20.0f, 20.0f));
 
     /*sf::Music music;
     sf::Music endGame;
@@ -188,6 +192,9 @@ int main()
         //model = glm::scale(model, glm::vec3(0.008f, 0.008f, 0.008f));	// it's a bit too big for our scene, so scale it down
         //if(move=='l') { model = glm::translate(model, glm::vec3(0.0f, turn*countMove, 0.0f)); }
         //if(move=='r') { model = glm::translate(model, glm::vec3(0.0f, (-turn)*countMove, 0.0f)); }
+
+        ourShader.setMat4("model", space);
+        background.Draw(ourShader);
 
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
